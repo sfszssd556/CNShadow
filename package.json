@@ -8,12 +8,12 @@
   "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cnshadow/cnshadow.git"
+    "url": "https://github.com/sfszssd556/CNShadow.git"
   },
   "bugs": {
-    "url": "https://github.com/cnshadow/cnshadow/issues"
+    "url": "https://github.com/sfszssd556/CNShadow/issues"
   },
-  "homepage": "https://github.com/cnshadow/cnshadow#readme",
+  "homepage": "https://github.com/sfszssd556/CNShadow#readme",
   "engines": {
     "vscode": "^1.85.0"
   },

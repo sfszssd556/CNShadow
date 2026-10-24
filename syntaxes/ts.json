@@ -1,0 +1,19 @@
+{
+  "scopeName": "source.cnshadow.ts",
+  "patterns": [
+    {
+      "comment": "中文关键字（引擎内置关键字表，长词优先）",
+      "match": "(?:否则如果|如果|否则|循环|当|函数|返回|类|导入|从|常量|变量|异步|等待)(?![\\w\\u4e00-\\u9fff])",
+      "name": "keyword.control.cnshadow"
+    },
+    {
+      "comment": "复用 VS Code 内置 TypeScript 语法，英文部分照常高亮",
+      "include": "source.ts"
+    },
+    {
+      "comment": "其余中文标识符",
+      "match": "[\\u4e00-\\u9fff][\\u4e00-\\u9fff0-9_]*",
+      "name": "variable.other.cnshadow"
+    }
+  ]
+}

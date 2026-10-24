@@ -1,0 +1,19 @@
+{
+  "scopeName": "source.cnshadow.py",
+  "patterns": [
+    {
+      "comment": "中文关键字（Python 关键字表 + 内置常量别名，长词优先）",
+      "match": "(?:否则如果|如果|否则|循环|当|函数|返回|类|导入|从|异步|等待|真|假|空|没有)(?![\\w\\u4e00-\\u9fff])",
+      "name": "keyword.control.cnshadow"
+    },
+    {
+      "comment": "复用 VS Code 内置 Python 语法，英文部分照常高亮",
+      "include": "source.python"
+    },
+    {
+      "comment": "其余中文标识符",
+      "match": "[\\u4e00-\\u9fff][\\u4e00-\\u9fff0-9_]*",
+      "name": "variable.other.cnshadow"
+    }
+  ]
+}

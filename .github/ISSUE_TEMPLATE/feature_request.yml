@@ -1,0 +1,32 @@
+name: 功能建议
+description: 希望 CNShadow 支持新的映射、语言或交互
+title: "[建议] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎提出想法。如果只是想补充某条中文映射，直接在 PR 里改 `.cnmap` 或说明英文路径与期望别名即可。
+
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景
+      description: 你在什么情况下觉得不方便？
+      placeholder: 例如：写 Python 时经常用到 xxx，但当前没有中文别名
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望的效果
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 你试过的替代方案（可选）
+    validations:
+      required: false

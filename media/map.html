@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-{{nonce}}';">
+<title>CNShadow 映射表</title>
+<style>
+  :root {
+    --bg: var(--vscode-editor-background);
+    --fg: var(--vscode-editor-foreground);
+    --fg2: var(--vscode-descriptionForeground);
+    --muted: var(--vscode-disabledForeground, var(--vscode-descriptionForeground));
+    --border: var(--vscode-panel-border, rgba(128,128,128,.25));
+    --input-bg: var(--vscode-input-background);
+    --input-fg: var(--vscode-input-foreground);
+    --input-border: var(--vscode-input-border, rgba(128,128,128,.35));
+    --accent: var(--vscode-button-background);
+    --accent-fg: var(--vscode-button-foreground);
+    --hover: var(--vscode-list-hoverBackground);
+    --mono: var(--vscode-editor-font-family, Consolas, monospace);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 18px 22px 48px;
+    background: var(--bg); color: var(--fg);
+    font-family: var(--vscode-font-family); font-size: 13px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  .head { display: flex; align-items: center; gap: 14px; min-height: 30px; }
+  .desc { font-size: 12px; color: var(--fg2); }
+  .mono { font-family: var(--mono); font-size: 11.5px; }
+  .head-ops { margin-left: auto; display: flex; gap: 6px; }
+  button {
+    font-family: inherit; font-size: 12px; cursor: pointer;
+    color: var(--fg); background: transparent;
+    border: 1px solid var(--border); border-radius: 4px;
+    height: 28px; padding: 0 11px;
+  }
+  button:hover { background: var(--hover); }
+  button.primary {
+    color: var(--accent-fg); background: var(--accent);
+    border: none; height: 30px; padding: 0 16px;
+  }
+  button.primary:hover { filter: brightness(1.08); }
+  .tools { display: flex; gap: 10px; align-items: center; margin: 16px 0 10px; }
+  .search { position: relative; flex: 1; min-width: 0; }
+  .search input {
+    width: 100%; height: 30px; padding: 0 11px;
+    color: var(--input-fg); background: var(--input-bg);
+    border: 1px solid var(--input-border); border-radius: 4px; outline: none;
+  }
+  .search input:focus { border-color: var(--vscode-focusBorder); }
+  .seg { display: flex; gap: 2px; padding: 2px; border: 1px solid var(--border); border-radius: 4px; }
+  .seg button { height: 24px; border: none; padding: 0 10px; color: var(--fg2); }
+  .seg button.on { background: var(--vscode-button-secondaryBackground, rgba(128,128,128,.22)); color: var(--fg); }
+  .add {
+    display: flex; gap: 8px; align-items: center; padding: 12px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--vscode-sideBar-background, transparent);
+  }
+  .add input {
+    flex: 1; min-width: 0; height: 30px; padding: 0 10px;
+    color: var(--input-fg); background: var(--input-bg);
+    border: 1px solid var(--input-border); border-radius: 4px; outline: none;
+  }
+  .add input:focus { border-color: var(--vscode-focusBorder); }
+  .arrow { color: var(--muted); }
+  .hint { margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+  .section { margin-top: 26px; }
+  .sec-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .sec-title { font-size: 12px; font-weight: 600; letter-spacing: .3px; color: var(--fg2); }
+  .count {
+    font-size: 11px; color: var(--muted);
+    background: var(--vscode-badge-background, rgba(128,128,128,.2));
+    padding: 1px 7px; border-radius: 999px;
+  }
+  .note { font-size: 11px; color: var(--muted); }
+  .group-title { display: flex; gap: 8px; align-items: center; margin: 14px 0 6px; font-size: 11.5px; color: var(--muted); }
+  .list { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .row {
+    display: grid; grid-template-columns: minmax(0,1fr) 18px minmax(0,1fr) 64px 110px;
+    align-items: center; gap: 8px; height: 34px; padding: 0 12px;
+    border-top: 1px solid var(--border); font-size: 12.5px;
+  }
+  .row:first-child { border-top: none; }
+  .row:hover { background: var(--hover); }
+  .en { font-family: var(--mono); font-size: 11.5px; color: var(--fg2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .arrow { text-align: center; }
+  .cn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tag { font-size: 11px; color: var(--muted); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tag.user { color: var(--vscode-textLink-foreground, #4daafc); }
+  .ops { display: flex; gap: 2px; justify-content: flex-end; opacity: 0; }
+  .row:hover .ops, .row:focus-within .ops { opacity: 1; }
+  .ops button { height: 24px; padding: 0 7px; font-size: 11.5px; border: none; color: var(--muted); }
+  .ops button:hover { color: var(--fg); background: rgba(128,128,128,.18); }
+  .ops button.danger:hover { color: var(--vscode-errorForeground, #f14c4c); }
+  .ops button.strong { color: var(--vscode-textLink-foreground, #4daafc); }
+  .inline {
+    width: 100%; height: 24px; padding: 0 7px; font-size: 12.5px;
+    color: var(--input-fg); background: var(--input-bg);
+    border: 1px solid var(--vscode-focusBorder); border-radius: 3px; outline: none;
+  }
+  .empty { padding: 14px; font-size: 12px; color: var(--muted); border: 1px dashed var(--border); border-radius: 6px; }
+  .none { margin-top: 18px; font-size: 12px; color: var(--muted); }
+  #toast {
+    position: fixed; right: 20px; bottom: 20px; max-width: 60vw;
+    padding: 8px 14px; border-radius: 5px; font-size: 12px;
+    background: var(--vscode-notifications-background, #252526);
+    color: var(--fg); border: 1px solid var(--border);
+    opacity: 0; transform: translateY(6px); transition: .16s; pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.error { border-color: var(--vscode-errorForeground, #f14c4c); color: var(--vscode-errorForeground, #f14c4c); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="desc">磁盘始终保存英文，编辑器内显示中文 · <span class="mono" id="mapPath">.cnmap</span></div>
+    <div class="head-ops">
+      <button id="btnReload">重载</button>
+      <button id="btnOpen">打开 .cnmap</button>
+    </div>
+  </div>
+
+  <div class="tools">
+    <label class="search"><input id="q" placeholder="搜索英文路径或中文别名…" spellcheck="false"></label>
+    <div class="seg">
+      <button data-filter="all" class="on">全部</button>
+      <button data-filter="user">自定义</button>
+      <button data-filter="builtin">内置库</button>
+    </div>
+  </div>
+
+  <div class="add">
+    <input id="newEn" placeholder="英文限定路径，如 document.querySelector" spellcheck="false">
+    <span class="arrow">→</span>
+    <input id="newCn" placeholder="中文别名，如 文档.查询选择器" spellcheck="false">
+    <button class="primary" id="btnAdd">添加</button>
+  </div>
+  <div class="hint">支持点号路径；别名只允许中文、数字、下划线；同一别名不能重复。用户别名优先于内置库。</div>
+
+  <section class="section" id="secUser">
+    <div class="sec-head"><span class="sec-title">自定义映射</span><span class="count" id="userCount">0</span></div>
+    <div id="userList"></div>
+  </section>
+
+  <section class="section" id="secBuiltin">
+    <div class="sec-head">
+      <span class="sec-title">内置库映射</span>
+      <span class="count" id="builtinCount">0</span>
+      <span class="note">只读，可点「自定义」覆盖</span>
+    </div>
+    <div id="builtinList"></div>
+  </section>
+
+  <div class="none" id="noResult" hidden>没有匹配的映射。</div>
+</div>
+<div id="toast"></div>
+
+<script nonce="{{nonce}}">
+(function () {
+  const vscode = acquireVsCodeApi();
+  const state = { filter: 'all', query: '', user: [], builtin: [], editing: null };
+  const $ = (id) => document.getElementById(id);
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function rowHtml(en, cn, isUser) {
+    return '<div class="row" data-en="' + esc(en) + '" data-cn="' + esc(cn) + '" data-kind="' +
+      (isUser ? 'user' : 'builtin') + '">' +
+      '<span class="en" title="' + esc(en) + '">' + esc(en) + '</span>' +
+      '<span class="arrow">→</span>' +
+      '<span class="cn" title="' + esc(cn) + '">' + esc(cn) + '</span>' +
+      '<span class="tag' + (isUser ? ' user' : '') + '">' + (isUser ? '自定义' : '内置') + '</span>' +
+      '<span class="ops">' +
+        (isUser
+          ? '<button data-act="edit">编辑</button><button data-act="del" class="danger">删除</button>'
+          : '<button data-act="override">自定义</button>') +
+      '</span>' +
+      '</div>';
+  }
+
+  function render(payload) {
+    state.user = payload.user || [];
+    state.builtin = payload.builtin || [];
+    $('mapPath').textContent = payload.mapPath || '.cnmap';
+
+    $('userCount').textContent = String(state.user.length);
+    $('builtinCount').textContent = String(payload.builtinTotal || 0);
+    document.querySelectorAll('[data-filter]').forEach(function (b) {
+      const f = b.getAttribute('data-filter');
+      const n = f === 'all' ? state.user.length + (payload.builtinTotal || 0)
+        : f === 'user' ? state.user.length : (payload.builtinTotal || 0);
+      const label = f === 'all' ? '全部' : f === 'user' ? '自定义' : '内置库';
+      b.textContent = label + ' ' + n;
+    });
+
+    $('userList').innerHTML = state.user.length
+      ? '<div class="list">' + state.user.map(function (e) { return rowHtml(e[0], e[1], true); }).join('') + '</div>'
+      : '<div class="empty">还没有自定义映射。可在上方添加，或在编辑器里把光标放到标识符上执行「为标识符标注中文别名」。</div>';
+
+    $('builtinList').innerHTML = state.builtin.map(function (g) {
+      return '<div class="group" data-group>' +
+        '<div class="group-title"><span>' + esc(g.label) + '</span>' +
+        '<span class="count">' + g.items.length + '</span></div>' +
+        '<div class="list">' + g.items.map(function (e) { return rowHtml(e[0], e[1], false); }).join('') + '</div>' +
+        '</div>';
+    }).join('');
+
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const q = state.query.trim().toLowerCase();
+    let visible = 0;
+    document.querySelectorAll('.row').forEach(function (row) {
+      const kind = row.getAttribute('data-kind');
+      const okKind = state.filter === 'all' || (state.filter === 'user' ? kind === 'user' : kind === 'builtin');
+      const text = (row.getAttribute('data-en') + ' ' + row.getAttribute('data-cn')).toLowerCase();
+      const okQ = !q || text.indexOf(q) >= 0;
+      const show = okKind && okQ;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    document.querySelectorAll('[data-group]').forEach(function (g) {
+      const any = Array.prototype.some.call(g.querySelectorAll('.row'), function (r) {
+        return r.style.display !== 'none';
+      });
+      g.style.display = any ? '' : 'none';
+    });
+    const secUser = $('secUser');
+    const anyUser = Array.prototype.some.call(secUser.querySelectorAll('.row'), function (r) {
+      return r.style.display !== 'none';
+    });
+    secUser.style.display = (anyUser || (state.filter !== 'builtin' && !q && !state.user.length)) ? '' : 'none';
+    $('noResult').hidden = visible > 0;
+  }
+
+  function toast(level, message) {
+    const el = $('toast');
+    el.textContent = message;
+    el.className = 'show' + (level === 'error' ? ' error' : '');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { el.className = ''; }, 2600);
+  }
+
+  document.querySelectorAll('[data-filter]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.filter = b.getAttribute('data-filter');
+      document.querySelectorAll('[data-filter]').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      applyFilter();
+    });
+  });
+
+  $('q').addEventListener('input', function (e) {
+    state.query = e.target.value;
+    applyFilter();
+  });
+
+  function submit(en, cn) {
+    vscode.postMessage({ type: 'set', en: en, cn: cn });
+  }
+
+  $('btnAdd').addEventListener('click', function () {
+    const en = $('newEn').value.trim();
+    const cn = $('newCn').value.trim();
+    if (!en || !cn) { toast('error', '请填写英文路径与中文别名'); return; }
+    submit(en, cn);
+    $('newEn').value = '';
+    $('newCn').value = '';
+  });
+
+  ['newEn', 'newCn'].forEach(function (id) {
+    $(id).addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); $('btnAdd').click(); }
+    });
+  });
+
+  $('btnReload').addEventListener('click', function () { vscode.postMessage({ type: 'reload' }); });
+  $('btnOpen').addEventListener('click', function () { vscode.postMessage({ type: 'openMapFile' }); });
+
+  // 行内操作（事件委托）
+  document.addEventListener('click', function (e) {
+    const btn = e.target && e.target.closest ? e.target.closest('button[data-act]') : null;
+    if (!btn) { return; }
+    const row = btn.closest('.row');
+    if (!row) { return; }
+    const en = row.getAttribute('data-en');
+    const cn = row.getAttribute('data-cn');
+    const act = btn.getAttribute('data-act');
+
+    if (act === 'del') {
+      if (confirm('删除映射 "' + en + ' → ' + cn + '"？')) {
+        vscode.postMessage({ type: 'delete', en: en });
+      }
+      return;
+    }
+    if (act === 'edit' || act === 'override') {
+      if (row.querySelector('.inline')) { return; }
+      const cnCell = row.querySelector('.cn');
+      const ops = row.querySelector('.ops');
+      const oldCn = cnCell.textContent;
+      cnCell.innerHTML = '<input class="inline" spellcheck="false">';
+      const input = cnCell.querySelector('input');
+      input.value = act === 'edit' ? oldCn : oldCn;
+      input.focus();
+      input.select();
+      ops.innerHTML = '<button data-act="save" class="strong">保存</button><button data-act="cancel">取消</button>';
+      input.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') { ev.preventDefault(); submit(en, input.value.trim()); }
+        if (ev.key === 'Escape') { ev.preventDefault(); renderAll(); }
+      });
+      ops.querySelector('[data-act="save"]').addEventListener('click', function () {
+        submit(en, input.value.trim());
+      });
+      ops.querySelector('[data-act="cancel"]').addEventListener('click', renderAll);
+    }
+  });
+
+  function renderAll() {
+    vscode.postMessage({ type: 'ready' });
+  }
+
+  window.addEventListener('message', function (e) {
+    const msg = e.data;
+    if (!msg) { return; }
+    if (msg.type === 'render') { render(msg.payload || {}); }
+    if (msg.type === 'toast') { toast(msg.level, msg.message); }
+  });
+
+  vscode.postMessage({ type: 'ready' });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+{
+  "name": "cnshadow",
+  "displayName": "CNShadow",
+  "description": "用中文关键字和中文库名写 TypeScript / JavaScript / Python，磁盘始终保存纯英文源码。内置 2790 条中文映射，自带映射表编辑页与中文模式问题检测器。",
+  "version": "1.2.0",
+  "publisher": "cnshadow",
+  "license": "MIT",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cnshadow/cnshadow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cnshadow/cnshadow/issues"
+  },
+  "homepage": "https://github.com/cnshadow/cnshadow#readme",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "中文编程",
+    "chinese",
+    "bilingual",
+    "typescript",
+    "python"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onFileSystem:cnshadow",
+    "onCommand:cnshadow.toggle"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cnshadow.run",
+        "title": "运行当前文件（中文视图可直接运行）",
+        "icon": "$(play)"
+      },
+      {
+        "command": "cnshadow.toggle",
+        "title": "CN/EN 切换视图",
+        "icon": "$(symbol-key)"
+      },
+      {
+        "command": "cnshadow.openMap",
+        "title": "CNShadow: 打开中文映射表",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "cnshadow.annotateAlias",
+        "title": "CNShadow: 为标识符标注中文别名"
+      },
+      {
+        "command": "cnshadow.removeAlias",
+        "title": "CNShadow: 移除标识符中文别名"
+      },
+      {
+        "command": "cnshadow.reloadMap",
+        "title": "CNShadow: 重载 .cnmap 映射表"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "cnshadow.run",
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "cnshadow.toggle",
+        "key": "ctrl+alt+l",
+        "mac": "cmd+alt+l",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "cnshadow.openMap",
+        "key": "ctrl+alt+m",
+        "mac": "cmd+alt+m"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "cnshadow.run",
+          "when": "resourceScheme == file && (resourceLangId == typescript || resourceLangId == javascript || resourceLangId == python) || resourceScheme == cnshadow",
+          "group": "navigation@0"
+        },
+        {
+          "command": "cnshadow.toggle",
+          "when": "resourceScheme == file || resourceScheme == cnshadow",
+          "group": "navigation@1"
+        },
+        {
+          "command": "cnshadow.openMap",
+          "when": "resourceScheme == file || resourceScheme == cnshadow",
+          "group": "navigation@2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "cnshadow.run",
+          "when": "resourceScheme == file && (resourceLangId == typescript || resourceLangId == javascript || resourceLangId == python) || resourceScheme == cnshadow",
+          "group": "cnshadow@0"
+        },
+        {
+          "command": "cnshadow.toggle",
+          "when": "resourceScheme == file || resourceScheme == cnshadow",
+          "group": "cnshadow@1"
+        },
+        {
+          "command": "cnshadow.openMap",
+          "group": "cnshadow@2"
+        },
+        {
+          "command": "cnshadow.annotateAlias",
+          "group": "cnshadow@3"
+        },
+        {
+          "command": "cnshadow.reloadMap",
+          "group": "cnshadow@4"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "cnshadow.toggle",
+          "when": "editorLangId != ''"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "cnshadow-typescript",
+        "aliases": [
+          "CN 中文 TypeScript",
+          "cnts"
+        ],
+        "extensions": [
+          ".cnts"
+        ],
+        "configuration": "./languages/ts.json"
+      },
+      {
+        "id": "cnshadow-javascript",
+        "aliases": [
+          "CN 中文 JavaScript",
+          "cnjs"
+        ],
+        "extensions": [
+          ".cnjs"
+        ],
+        "configuration": "./languages/js.json"
+      },
+      {
+        "id": "cnshadow-python",
+        "aliases": [
+          "CN 中文 Python",
+          "cnpy"
+        ],
+        "extensions": [
+          ".cnpy"
+        ],
+        "configuration": "./languages/python.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "cnshadow-typescript",
+        "scopeName": "source.cnshadow.ts",
+        "path": "./syntaxes/ts.json"
+      },
+      {
+        "language": "cnshadow-javascript",
+        "scopeName": "source.cnshadow.js",
+        "path": "./syntaxes/js.json"
+      },
+      {
+        "language": "cnshadow-python",
+        "scopeName": "source.cnshadow.py",
+        "path": "./syntaxes/python.json"
+      }
+    ],
+    "configuration": {
+      "title": "CNShadow",
+      "properties": {
+        "cnshadow.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否启用中英双语映射。"
+        },
+        "cnshadow.maxFullParseLines": {
+          "type": "number",
+          "default": 10000,
+          "description": "超过该行数的文件自动降级为「仅关键字替换」模式。"
+        },
+        "cnshadow.blockOnUnmappedAlias": {
+          "type": "boolean",
+          "default": true,
+          "description": "保存时若存在未映射的中文标识符，则阻止保存并提示位置。"
+        },
+        "cnshadow.diagnostics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "中文模式下启用独立的问题检测器（只做语法检查，不会误报中文关键字）。"
+        },
+        "cnshadow.completion.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "中文模式下按「.」时提供库成员补全（中文别名 + 英文原名对照，Python 带文档字符串）。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "@types/vscode": "^1.85.0"
+  }
+}
